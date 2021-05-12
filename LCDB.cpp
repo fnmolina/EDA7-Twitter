@@ -306,6 +306,7 @@ void LCDB::deinitAllegro()
 
 void LCDB::writeLCD()
 {
+	al_set_target_backbuffer(screen);
 	al_draw_bitmap(bitmap, 0, 0, 0);
 	string str = "";
 	for (int i = 0; i < ROWS; ++i)

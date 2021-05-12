@@ -19,9 +19,9 @@
 class Gui {
 public:
     Gui();
-    int mainWindow(void);
+    int mainWindow();
 
-    int showMainWindow(void);
+    int showMainWindow();
 
     int configureEvents(void);
     int configureImGui(void);
@@ -51,6 +51,43 @@ private:
     double fps;
 };
 
+class TwitterGui {
+public:
+    TwitterGui();
+    int mainWindow(int *);
 
+    int showMainWindow();
+
+    int configureEvents(void);
+    int configureImGui(void);
+
+    int loop(int *);
+    void close();
+
+    std::string cant_tweets;
+    std::string usuario;
+    bool cancelRequest;
+private:
+    int selectedDisplay;
+
+    char buf_usuario[LONG_USUARIO + 1] = { 0 };
+    char buf_canttweets[LONG_CANTTWEETS + 1] = { 0 };
+
+    int guiWindowSizeX;
+
+    ALLEGRO_DISPLAY* display;
+    ALLEGRO_BITMAP* buffer;
+    ALLEGRO_EVENT_QUEUE* queue;
+    ALLEGRO_EVENT ev;
+    ALLEGRO_TIMER* flipTimer;
+
+    double displaySizeX;
+    double displaySizeY;
+
+    bool runningMain;
+    bool closeWindow;
+
+    double fps;
+};
 
 #endif

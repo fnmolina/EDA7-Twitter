@@ -19,6 +19,7 @@ struct allegroPointers
 	ALLEGRO_FONT* font;
 	ALLEGRO_DISPLAY* display;
 	ALLEGRO_BITMAP* lcd;
+	ALLEGRO_BITMAP* buffer;
 };
 
 class LcdC : public basicLCD

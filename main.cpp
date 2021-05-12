@@ -52,6 +52,7 @@ int main(void) {
 
 	//Display y muestra de tuits.
 	Gui myGui;
+	TwitterGui tGui;
 
 	//Se crea una instancia de la clase TwitterClient y se pasa un puntero a cancelRequest.
 	int errorCode;
@@ -61,6 +62,7 @@ int main(void) {
 
 	basicLCD* lcd;
 	lcd = MainWindowSelector(myGui,&client,&all_info);
+	tGui.showMainWindow();
 
 	if (lcd == NULL)
 	{
@@ -77,10 +79,12 @@ int main(void) {
 			al_flip_display();
 
 			//////////////////////////
-
+			if (tGui.loop(&indice) == -1)
+				closeDisplay = 1;
 			/////////////////////////
 
 			ALLEGRO_EVENT ev;
+
 			if (al_get_next_event(keyQueue, &ev))
 			{
 				int prueba = ev.keyboard.keycode;
@@ -113,11 +117,11 @@ int main(void) {
 					else if (ev.keyboard.keycode == ALLEGRO_KEY_UP)
 					{
 						lcd->lcdMoveCursorUp();
-					}
+					}*/
 					else if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN)
 					{
-						lcd->lcdMoveCursorDown();
-					}*/
+						indice = 999;
+					}
 					if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
 					{
 						closeDisplay = true;
@@ -159,7 +163,7 @@ int main(void) {
 
 			basicLCD* temp = MainWindowSelector(myGui,&client,&all_info);
 			lcd = temp;
-
+			tGui.showMainWindow();
 			if (lcd == NULL)
 			{
 				return 0;
@@ -203,7 +207,7 @@ basicLCD* MainWindowSelector(Gui& myGui, TwitterClient* client, parsed_info* inf
 	{
 		return NULL;
 	}
-
+	
 }
 
 void move_status_bar(Gui myGui,basicLCD* lcd,parsed_info* all_info){
@@ -245,8 +249,12 @@ int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int* indice)
 	static int pos = 0;
 	segundos += 0.1;
 
-
-	if (index >= 1 && *indice == -1) {
+	if (*indice == 999)
+	{
+		pos = 0;
+		segundos = 0;
+	}
+	else if (index >= 1 && *indice == -1) {
 		index--;
 		pos = 0;
 	}

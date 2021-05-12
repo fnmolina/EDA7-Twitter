@@ -42,6 +42,7 @@ int LcdC::initAllegro()
 	if (error == NOT_ERROR) //En caso de una inicialización correcta se dibuja el entorno
 	{
 		al_draw_bitmap(this->punteros.lcd, 0, 0, 0);
+		punteros.buffer =al_get_backbuffer(this->punteros.display);
 	}
 	else // Si hubo errores destruyo los recursos
 	{
@@ -98,6 +99,7 @@ LcdC::~LcdC()
 
 void LcdC::redraw()
 {
+	al_set_target_bitmap(punteros.buffer);
 	al_draw_bitmap(this->punteros.lcd, 0, 0, 0);
 
 	const char* texto1 = this->text[0].c_str();

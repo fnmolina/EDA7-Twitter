@@ -167,6 +167,7 @@ basicLCD& LCD3::operator<<(const char c) {
 
 void LCD3::printlcd() {
 
+	al_set_target_backbuffer(display3);
 	al_clear_to_color(al_map_rgb(0,0,255));
 
 
