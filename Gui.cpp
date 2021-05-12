@@ -313,7 +313,7 @@ int TwitterGui::mainWindow(int * indice,float * velocidad)
     ImGui::SetNextWindowSize(ImVec2(guiWindowSizeX, 300), ImGuiCond_Always); //Aca pongo tamaño de la pantalla
     ImGui::Begin("Configurar tweets", NULL, window_flags);
 
-    ImGui::SliderFloat("Velocidad", velocidad, 0.2, 1.5);//(const char* label, float* v, float v_min, float v_max, const char* format, float power);
+    ImGui::SliderFloat("Velocidad", velocidad, 0.2, 1.5,NULL, ImGuiSliderFlags_AlwaysClamp);//(const char* label, float* v, float v_min, float v_max, const char* format, float power);
 
     //ImGui::RadioButton("Display b", &selectedDisplay, 2); ImGui::SameLine(); (const char* label, int* v, int v_button)
 

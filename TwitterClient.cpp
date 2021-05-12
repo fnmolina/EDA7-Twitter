@@ -11,7 +11,6 @@
 
 TwitterClient::TwitterClient(bool* cancelRequest, int* clientError)
 {
-	this->tweetsReady = false;
 	this->cancelRequest = cancelRequest;
 	this->clientError = clientError;
 	*this->clientError = CONNECTION_ERROR;
@@ -19,11 +18,16 @@ TwitterClient::TwitterClient(bool* cancelRequest, int* clientError)
 	this->multiHandle = NULL;				//Administra easy handles.
 	this->j.clear();						//json con informacion recibida de Twitter.
 	this->token = "";						//Guarda token de acceso para recibir tweets.
-	this->query = "";						// Direccion de Twitter que se va a consultar. 	
-
+	this->query = "";						// Direccion de Twitter que se va a consultar. 
+	this->tweetsNum = "";					//Guarda string con la cantidad de tweets.
+	this->stillRunning = 0;					//Para manejo de estado de procesamiento
+	this->errorType = 0;					//Manejo de codigo de errores.
+	this->m = NULL;							//Puntero a estructura de CURLmsg.
 	//Datos de autentificacion de usuario de Twitter Developer. Por default, los datos provistos por la catedra.
 	API_key = "HCB39Q15wIoH61KIkY5faRDf6";
 	API_SecretKey = "7s8uvgQnJqjJDqA6JsLIFp90FcOaoR5Ic41LWyHOic0Ht3SRJ6";
+
+	tweetsReady = false;
 }
 
 //Posibilidad de cambio de usuario para acceder a los tuits.
@@ -37,6 +41,30 @@ void TwitterClient::setUserLoginData(std::string key, std::string SecretKey)
 void TwitterClient::setQuery(std::string twitterUser)
 {
 	this->query = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=" + twitterUser + "&count=";
+}
+
+//Devuelve indicador de finalizacion del proceso
+bool TwitterClient::isReady()
+{
+	return tweetsReady;
+}
+
+//Devuelve tweets en formato json
+json TwitterClient::getTweets()
+{
+	return this->j;
+}
+
+//Devuelve descripcion de error segun el tipo. 
+std::string TwitterClient::getErrorMessage()
+{
+	std::string message = "";
+	switch (this->errorType)
+	{
+	case 0:
+		break;
+	}
+	return message;
 }
 
 //Configuracion de cURL, autentificacion con Outh2 y obtencion del token de Twitter.
@@ -126,22 +154,30 @@ int TwitterClient::requestBearerToken()
 	return 1;
 }
 
-//Solicitud de tuits de un usuario de preferencia.
-json TwitterClient::requestTweets(std::string count)
+void TwitterClient::configTweetsRequest(std::string count)
 {
-	this->tweetsReady = false;
+	this->tweetsNum = count;
+	//Se agrega al query la cantidad de tuits a descargar.
+	//std::string completeQuery = this->query + this->tweetsNum;
+
+	//this->stillRunning = 0;			//Se inicializa proceso
 	this->j.clear();				//Se limpian mensajes anteriores
 
-	//Se agrega al query la cantidad de tuits a descargar.
-	std::string completeQuery = this->query + count;
-
 	//Se inicializa nuevamente cURL, esta vez de forma simultanea y asincronica.
-	curl = curl_easy_init();
-	multiHandle = curl_multi_init();
+	this->curl = curl_easy_init();
+	this->multiHandle = curl_multi_init();
 
+	this->tweetsReady = false;
+
+}
+
+//Solicitud de tuits de un usuario de preferencia.
+int TwitterClient::requestTweets()
+{
+	this->tweetsReady = false;
+	int msgq = 0;
+	this->j.clear();	
 	std::string readString = "";	//Para lectura de datos devueltos
-	int stillRunning = 0;			//Para manejo de estado de procesamiento
-
 	//Por default, se setea el json de error como vacio.
 	json errorJson;
 	errorJson["myCount"] = nullptr;
@@ -152,7 +188,7 @@ json TwitterClient::requestTweets(std::string count)
 		curl_multi_add_handle(multiHandle, curl);
 
 		//Seteamos URL FOLLOWLOCATION y los protocolos a utilizar.
-		curl_easy_setopt(curl, CURLOPT_URL, completeQuery.c_str());
+		curl_easy_setopt(curl, CURLOPT_URL, (this->query + this->tweetsNum).c_str());
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 		curl_easy_setopt(curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
 
@@ -169,16 +205,14 @@ json TwitterClient::requestTweets(std::string count)
 
 		//Se realiza ahora un perform no bloqueante.
 		curl_multi_perform(multiHandle, &stillRunning);
-		while (stillRunning)
+		m = curl_multi_info_read(multiHandle, &msgq);
+		//Si se canceló la request en algun momento, se para el proceso.
+		if (*cancelRequest)
 		{
-			//Si se canceló la request en algun momento, se para el proceso.
-			if (*cancelRequest)
-			{
-				curl_multi_remove_handle(multiHandle, curl);
-			}
-			//Debemos hacer polling de la transferencia hasta que haya terminado.
-			curl_multi_perform(multiHandle, &stillRunning);
+			curl_multi_remove_handle(multiHandle, curl);
 		}
+		//Debemos hacer polling de la transferencia hasta que haya terminado.
+		//curl_multi_perform(multiHandle, &stillRunning);
 
 		//Check de errores.
 		if (output != CURLE_OK)
@@ -186,16 +220,19 @@ json TwitterClient::requestTweets(std::string count)
 			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(output) << std::endl;
 			//Se liberan los recursos antes de salir.
 			curl_easy_cleanup(curl);
-			return errorJson;
+			this->j = errorJson;
+			return 0;
 		}
-
-		//Cleanup al final.
-		curl_easy_cleanup(curl);
 
 		//Si el request de CURL fue exitoso entonces twitter devuelve un JSON
 		//con toda la informacion de los tweets que le pedimos
-		this->j = json::parse(readString);
-		this->tweetsReady = true;	//Activa indicador de actualizacion de tweets.
+		if (stillRunning == 0)	//Si el proceso termino, se escribe el json
+		{
+			this->j = json::parse(readString);
+			this->tweetsReady = true;
+			//Cleanup al final.
+			curl_easy_cleanup(curl);
+		}
 	}
 	//En caso de no haber podido realizar correctamente la conexion, error. 
 	else
@@ -203,9 +240,12 @@ json TwitterClient::requestTweets(std::string count)
 		std::cout << "Cannot download tweets. Unable to start cURL" << std::endl;
 		//Se notifica error de conexion a usuario
 		*this->clientError = NO_USER_ERROR;
-		return errorJson;
+		//Cleanup al final.
+		curl_easy_cleanup(curl);
+		this->j = errorJson;
+		return 0;
 	}
-	return this->j;
+	return 0;
 }
 
 

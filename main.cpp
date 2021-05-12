@@ -13,7 +13,7 @@
 
 #define TWEETS_FINISHED 0
 
-int update_tweets(Gui myGui,basicLCD* lcd, parsed_info* all_info, int * indice, float );
+int update_tweets(Gui myGui,basicLCD* lcd, parsed_info* all_info, int * indice, float velocidad);
 void move_status_bar(Gui myGui,basicLCD* lcd,parsed_info* all_info);
 basicLCD* MainWindowSelector(Gui& myGui, TwitterClient* client,parsed_info* info);
 void printNames(std::list<std::string> names);
@@ -132,21 +132,23 @@ int main(void) {
 					break;
 				case ALLEGRO_EVENT_TIMER:
 
-					if(client.tweetsReady==true)
-					{
-						downloading = false;
-						client.tweetsReady = false;
-					}
-
-					if (downloading == true)
+					if(client.isReady())
 					{
 						if (update_tweets(myGui, lcd, &all_info, &indice, velocidad) == TWEETS_FINISHED)
+						{
 							closeDisplay = true;
+						}
 					}
-					else if (downloading == false)
+					else
 					{
-						move_status_bar(myGui, lcd, &all_info);
-						downloading = true;
+						client.requestTweets();
+						if (client.isReady())
+						{
+							all_info.tweets = client.getTweets();
+							all_info.parse(myGui.usuario);
+						}
+						//mostrar tweets
+						//move_status_bar(myGui, lcd, &all_info);
 					}
 						
 					break;
@@ -183,15 +185,13 @@ int main(void) {
 basicLCD* MainWindowSelector(Gui& myGui, TwitterClient* client, parsed_info* info)
 {
 	int selector = myGui.showMainWindow();
-
-	if (selector != -1)
+	//Una vez introducidos el usuario y la cantidad de tuits, se lo pasa al client.
+	if(selector != -1) 
 	{
-		//Una vez introducidos el usuario y la cantidad de tuits, se lo pasa al client.
 		client->setQuery(myGui.usuario);
-		info->tweets = client->requestTweets(myGui.cant_tweets);
-		if (client->tweetsReady == true)
-			info->parse(myGui.usuario);
+		client->configTweetsRequest(myGui.cant_tweets);
 	}
+
 	if (selector == 1)
 	{
 		return new LcdC();
