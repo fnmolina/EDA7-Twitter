@@ -21,7 +21,7 @@ class parsed_info {
 
 public:
 
-	void parse();
+	void parse(std::string user);
 
 	std::list<std::string> names;	
 	std::list<std::string> dates;

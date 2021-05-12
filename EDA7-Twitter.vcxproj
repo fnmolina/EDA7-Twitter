@@ -144,6 +144,7 @@
     <ClInclude Include="Error.h" />
     <ClInclude Include="Gui.h" />
     <ClInclude Include="json.hpp" />
+    <ClInclude Include="lcd3.h" />
     <ClInclude Include="LCDB.h" />
     <ClInclude Include="LCDC.h" />
     <ClInclude Include="lib\imconfig.h" />
@@ -161,6 +162,7 @@
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="Error.cpp" />
     <ClCompile Include="Gui.cpp" />
+    <ClCompile Include="lcd3.cpp" />
     <ClCompile Include="LCDB.cpp" />
     <ClCompile Include="LCDC.cpp" />
     <ClCompile Include="lib\imgui.cpp" />

@@ -220,6 +220,10 @@ basicLCD& LcdC::operator<<(const char* c)
 				break;
 			}
 		}
+		else
+		{
+			i++;
+		}
 	}
 
 	redraw();

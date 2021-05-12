@@ -2,6 +2,7 @@
 
 #include "LCDB.h"
 #include "LCDC.h"
+#include "lcd3.h"
 
 #include <typeinfo>
 
@@ -134,13 +135,11 @@ int main(void) {
 
 					if (downloading == true)
 					{
-						//barra
 						if (update_tweets(myGui, lcd, &all_info, &indice) == TWEETS_FINISHED)
 							closeDisplay = true;
 					}
 					else if (downloading == false)
 					{
-						//mostrar tweets
 						move_status_bar(myGui, lcd, &all_info);
 						downloading = true;
 					}
@@ -154,6 +153,8 @@ int main(void) {
 
 		if (closeDisplay)
 		{
+			all_info.names.clear();
+			all_info.dates.clear();
 			delete lcd;
 
 			basicLCD* temp = MainWindowSelector(myGui,&client,&all_info);
@@ -184,7 +185,7 @@ basicLCD* MainWindowSelector(Gui& myGui, TwitterClient* client, parsed_info* inf
 		client->setQuery(myGui.usuario);
 		info->tweets = client->requestTweets(myGui.cant_tweets);
 		if (client->tweetsReady == true)
-			info->parse();
+			info->parse(myGui.usuario);
 	}
 	if (selector == 1)
 	{
@@ -196,7 +197,7 @@ basicLCD* MainWindowSelector(Gui& myGui, TwitterClient* client, parsed_info* inf
 	}
 	else if (selector == 3)
 	{
-		return new LcdC();
+		return new LCD3();
 	}
 	else
 	{
@@ -233,6 +234,10 @@ void move_status_bar(Gui myGui,basicLCD* lcd,parsed_info* all_info){
 
 }
 
+/*cursorPosition lower_line;
+lower_line.row = 0;
+lower_line.column = 0;*/
+
 int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int* indice)
 {
 	static int index = 0;
@@ -257,18 +262,25 @@ int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int* indice)
 		index = 0;
 		segundos = 0;
 		pos = 0;
+		*indice = 0;
 		return TWEETS_FINISHED;
 	}
 
 	*indice = 0;
 
 	lcd->lcdClear();
-	auto inicio1 = all_info->dates.begin();
+	if (!(index +1 == atoi(myGui.cant_tweets.c_str())))
+	{
+		auto inicio1 = all_info->dates.begin();
 
-	std::advance(inicio1, index);
+		std::advance(inicio1, index);
 
-	lcd->operator<< ((*inicio1).c_str());
-
+		lcd->operator<< ((*inicio1).c_str());
+	}
+	else
+	{
+		lcd->operator<< ("Ultimo Tweet    ");
+	}
 	auto inicio2 = all_info->names.begin();
 
 
@@ -289,11 +301,13 @@ int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int* indice)
 		else
 		{
 			index++;
+			pos = 0;
 			if (index == atoi(myGui.cant_tweets.c_str()))
 			{
 				index = 0;
 				segundos = 0;
 				pos = 0;
+				*indice = 0;
 				return TWEETS_FINISHED;
 			}
 

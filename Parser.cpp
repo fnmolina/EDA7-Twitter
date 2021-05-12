@@ -4,7 +4,7 @@
 using json = nlohmann::json;
 
 
-void parsed_info::parse(){
+void parsed_info::parse(std::string user){
 
 	for (auto element : tweets)
 		names.push_back(element["text"]);
@@ -16,7 +16,9 @@ void parsed_info::parse(){
 		int extended = (*it).find("https");
 		*it = (*it).substr(0, extended);
 		(*it).append(" -");
-		(*it).insert(0,"- ");
+		(*it).insert(0,"  - ");
+		(*it).insert(0,user);
+		(*it).insert(0,"@");
 		std::cout << "Tweet:" << *it << std::endl;
 		std::cout << "-----------------------------------------" << std::endl;
 	}

@@ -1,4 +1,5 @@
 #include "Gui.h"
+#define DEFAULT_TWEETS  "50"
 
 using namespace std;
 
@@ -181,6 +182,8 @@ int Gui::mainWindow(void)
     {
         usuario = string(buf_usuario);
         cant_tweets = buf_canttweets;
+        if (cant_tweets == "")
+            cant_tweets = DEFAULT_TWEETS;
         ImGui::End();
         return selectedDisplay;
     }

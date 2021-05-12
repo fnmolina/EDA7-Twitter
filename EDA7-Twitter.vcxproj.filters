@@ -66,6 +66,9 @@
     <ClInclude Include="TwitterClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="lcd3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\imgui.cpp">
@@ -111,6 +114,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TwitterClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lcd3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
