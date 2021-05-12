@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Lib">
+      <UniqueIdentifier>{366eed6b-086a-410a-9b55-bbc0e75d4555}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lib\imconfig.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui_impl_allegro5.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui_internal.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imstb_rectpack.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imstb_textedit.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imstb_truetype.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicLCD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Error.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Gui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LCDB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LCDC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TwitterClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="lib\imgui.cpp">
+      <Filter>Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui_demo.cpp">
+      <Filter>Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui_draw.cpp">
+      <Filter>Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui_impl_allegro5.cpp">
+      <Filter>Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui_tables.cpp">
+      <Filter>Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui_widgets.cpp">
+      <Filter>Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicLCD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Error.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Gui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LCDB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LCDC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TwitterClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="Fonts\courier.ttf">
+      <Filter>Resource Files</Filter>
+    </Font>
+    <Font Include="Fonts\love.ttf">
+      <Filter>Resource Files</Filter>
+    </Font>
+    <Font Include="Fonts\Minecraft.ttf">
+      <Filter>Resource Files</Filter>
+    </Font>
+    <Font Include="Fonts\OpenSans-Semibold.ttf">
+      <Filter>Resource Files</Filter>
+    </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Images\lcd.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Images\LCDB_PNG.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+</Project>
