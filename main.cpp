@@ -13,7 +13,7 @@
 
 #define TWEETS_FINISHED 0
 
-int update_tweets(Gui myGui,basicLCD* lcd, parsed_info* all_info, int * indice);
+int update_tweets(Gui myGui,basicLCD* lcd, parsed_info* all_info, int * indice, float );
 void move_status_bar(Gui myGui,basicLCD* lcd,parsed_info* all_info);
 basicLCD* MainWindowSelector(Gui& myGui, TwitterClient* client,parsed_info* info);
 void printNames(std::list<std::string> names);
@@ -23,6 +23,7 @@ int main(void) {
 	bool cancelRequest = false;
 	bool downloading = true;
 	int indice = 0;
+	float velocidad = 0.1; 
 	parsed_info all_info;
 
 	/*json tweets;
@@ -79,7 +80,7 @@ int main(void) {
 			al_flip_display();
 
 			//////////////////////////
-			if (tGui.loop(&indice) == -1)
+			if (tGui.loop(&indice,&velocidad) == -1)
 				closeDisplay = 1;
 			/////////////////////////
 
@@ -139,7 +140,7 @@ int main(void) {
 
 					if (downloading == true)
 					{
-						if (update_tweets(myGui, lcd, &all_info, &indice) == TWEETS_FINISHED)
+						if (update_tweets(myGui, lcd, &all_info, &indice, velocidad) == TWEETS_FINISHED)
 							closeDisplay = true;
 					}
 					else if (downloading == false)
@@ -242,12 +243,12 @@ void move_status_bar(Gui myGui,basicLCD* lcd,parsed_info* all_info){
 lower_line.row = 0;
 lower_line.column = 0;*/
 
-int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int* indice)
+int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int* indice, float velocidad)
 {
 	static int index = 0;
 	static float segundos = 0;
 	static int pos = 0;
-	segundos += 0.1;
+	segundos += velocidad; //0.1
 
 	if (*indice == 999)
 	{
@@ -301,7 +302,7 @@ int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int* indice)
 	{
 		pos++;
 	}
-	else if (segundos >= 0.18 && pos != 0)
+	else if (segundos >= (0.19 * velocidad) && pos != 0)
 	{
 		segundos = 0;
 		if (pos + 16 < strlen((*inicio2).c_str()))

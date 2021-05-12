@@ -54,14 +54,14 @@ private:
 class TwitterGui {
 public:
     TwitterGui();
-    int mainWindow(int *);
+    int mainWindow(int *,float*);
 
     int showMainWindow();
 
     int configureEvents(void);
     int configureImGui(void);
 
-    int loop(int *);
+    int loop(int *,float*);
     void close();
 
     std::string cant_tweets;

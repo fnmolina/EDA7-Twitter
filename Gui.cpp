@@ -285,7 +285,7 @@ int TwitterGui::configureImGui(void)
     return 0;
 }
 
-int TwitterGui::mainWindow(int * indice)
+int TwitterGui::mainWindow(int * indice,float * velocidad)
 {
     al_set_target_bitmap(buffer);
     static bool NoTitlebar = false;
@@ -313,9 +313,9 @@ int TwitterGui::mainWindow(int * indice)
     ImGui::SetNextWindowSize(ImVec2(guiWindowSizeX, 300), ImGuiCond_Always); //Aca pongo tamaño de la pantalla
     ImGui::Begin("Configurar tweets", NULL, window_flags);
 
-    //ImGui::SliderFloat("Display a", &selectedDisplay, 1)(const char* label, float* v, float v_min, float v_max, const char* format, float power);
+    ImGui::SliderFloat("Velocidad", velocidad, 0.2, 1.5);//(const char* label, float* v, float v_min, float v_max, const char* format, float power);
 
-    //ImGui::RadioButton("Display b", &selectedDisplay, 2); ImGui::SameLine();
+    //ImGui::RadioButton("Display b", &selectedDisplay, 2); ImGui::SameLine(); (const char* label, int* v, int v_button)
 
     //ImGui::RadioButton("Display c", &selectedDisplay, 3);
 
@@ -347,7 +347,7 @@ int TwitterGui::mainWindow(int * indice)
 }
 
 
-int TwitterGui::loop(int * indice) {
+int TwitterGui::loop(int * indice,float * velocidad) {
     al_set_target_bitmap(buffer);
     while (al_get_next_event(queue, &ev)) {
 
@@ -372,7 +372,7 @@ int TwitterGui::loop(int * indice) {
             ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 
 
-            if (mainWindow(indice)) {
+            if (mainWindow(indice, velocidad)) {
                 runningMain = false;
             }
 
