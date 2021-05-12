@@ -64,6 +64,7 @@ int main(void) {
 	if (lcd == NULL)
 	{
 		running = false;
+		delete lcd;
 	}
 
 	//Main loop.
@@ -135,9 +136,7 @@ int main(void) {
 					{
 						//barra
 						if (update_tweets(myGui, lcd, &all_info, &indice) == TWEETS_FINISHED)
-						{
 							closeDisplay = true;
-						}
 					}
 					else if (downloading == false)
 					{
@@ -179,12 +178,14 @@ basicLCD* MainWindowSelector(Gui& myGui, TwitterClient* client, parsed_info* inf
 {
 	int selector = myGui.showMainWindow();
 
-	//Una vez introducidos el usuario y la cantidad de tuits, se lo pasa al client.
-	client->setQuery(myGui.usuario);
-	info->tweets = client->requestTweets(myGui.cant_tweets);
-	if(client->tweetsReady == true)
-	info->parse();
-
+	if (selector != -1)
+	{
+		//Una vez introducidos el usuario y la cantidad de tuits, se lo pasa al client.
+		client->setQuery(myGui.usuario);
+		info->tweets = client->requestTweets(myGui.cant_tweets);
+		if (client->tweetsReady == true)
+			info->parse();
+	}
 	if (selector == 1)
 	{
 		return new LcdC();
@@ -232,27 +233,32 @@ void move_status_bar(Gui myGui,basicLCD* lcd,parsed_info* all_info){
 
 }
 
-int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int * indice)
+int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int* indice)
 {
 	static int index = 0;
 	static float segundos = 0;
 	static int pos = 0;
-	segundos+=0.1;
+	segundos += 0.1;
 
-	
+
 	if (index >= 1 && *indice == -1) {
 		index--;
 		pos = 0;
 	}
-		
-	else if (index < atoi(myGui.cant_tweets.c_str()) && *indice == 1)
+
+	else if (index + 1 < atoi(myGui.cant_tweets.c_str()) && *indice == 1)
 	{
 		pos = 0;
 		index++;
 	}
-		
-	else if (index == atoi(myGui.cant_tweets.c_str()) && *indice == 1)
+
+	else if (index + 1 == atoi(myGui.cant_tweets.c_str()) && *indice == 1)
+	{
+		index = 0;
+		segundos = 0;
+		pos = 0;
 		return TWEETS_FINISHED;
+	}
 
 	*indice = 0;
 
@@ -261,26 +267,21 @@ int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int * indice)
 
 	std::advance(inicio1, index);
 
-	if(inicio1 != all_info->dates.end())
-		lcd->operator<< ((*inicio1).c_str());
+	lcd->operator<< ((*inicio1).c_str());
 
 	auto inicio2 = all_info->names.begin();
 
 
 	std::advance(inicio2, index);
 
+	std::string aux = (*inicio2).substr(pos, 16);
 
-	if (inicio2 != all_info->names.end())
-	{
-		std::string aux = (*inicio2).substr(pos, 16);
-		lcd->operator<< (aux.c_str());
-	}
-		
+	lcd->operator<< (aux.c_str());
 	if (segundos >= 2 && pos == 0)
 	{
 		pos++;
 	}
-	else if (segundos >= 0.18 && pos !=0)
+	else if (segundos >= 0.18 && pos != 0)
 	{
 		segundos = 0;
 		if (pos + 16 < strlen((*inicio2).c_str()))
@@ -288,16 +289,16 @@ int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int * indice)
 		else
 		{
 			index++;
-			pos = 0;
 			if (index == atoi(myGui.cant_tweets.c_str()))
 			{
-				segundos = 0;
 				index = 0;
+				segundos = 0;
 				pos = 0;
 				return TWEETS_FINISHED;
 			}
+
 		}
-			
+
 	}
 
 	return -1;
