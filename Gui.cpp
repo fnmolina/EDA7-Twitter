@@ -46,10 +46,7 @@ int Gui::showMainWindow()
         return -1;
     }
 
-    /*IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui_ImplAllegro5_Init(this->display);
-    ImGui::StyleColorsLight();*/
+   
 
     if (configureImGui() == -1) {
         return -1;
@@ -88,7 +85,7 @@ int Gui::showMainWindow()
 
                     al_clear_to_color(al_map_rgba_f(1, 1, 0.8, 1));
 
-                    //Todo lo que dibuje aca va a quedar por detrás de las ventanas de DearImGui
+                    //Todo lo que dibuje aca va a quedar por detrÃ¡s de las ventanas de DearImGui
 
                     ImGui_ImplAllegro5_RenderDrawData(ImGui::GetDrawData());
 
@@ -163,7 +160,7 @@ int Gui::mainWindow()
     if (NoBackground)      window_flags |= ImGuiWindowFlags_NoBackground;
     if (no_bring_to_front)  window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-    ImGui::SetNextWindowSize(ImVec2(guiWindowSizeX, 300), ImGuiCond_Always); //Aca pongo tamaño de la pantalla
+    ImGui::SetNextWindowSize(ImVec2(guiWindowSizeX, 300), ImGuiCond_Always); //Aca pongo tamaÃ±o de la pantalla
     ImGui::Begin("Configurar tweets", NULL, window_flags);
 
     ImGui::RadioButton("Display a", &selectedDisplay, 1); ImGui::SameLine();
@@ -235,20 +232,13 @@ int TwitterGui::showMainWindow()
         return -1;
     }
 
-    /*IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui_ImplAllegro5_Init(this->display);
-    ImGui::StyleColorsLight();*/
-
+   
     if (configureImGui() == -1) {
         return -1;
     }
 
     al_start_timer(flipTimer);
-        //while (runningMain) {
-
-            
-        //}
+        
     
 }
 
@@ -310,19 +300,12 @@ int TwitterGui::mainWindow(int * indice,float * velocidad)
 
     
 
-    ImGui::SetNextWindowSize(ImVec2(guiWindowSizeX, 300), ImGuiCond_Always); //Aca pongo tamaño de la pantalla
+    ImGui::SetNextWindowSize(ImVec2(guiWindowSizeX, 300), ImGuiCond_Always); //Aca pongo tamaÃ±o de la pantalla
     ImGui::Begin("Configurar tweets", NULL, window_flags);
 
-    ImGui::SliderFloat("Velocidad", velocidad, 0.2, 2.5,NULL, ImGuiSliderFlags_AlwaysClamp);//(const char* label, float* v, float v_min, float v_max, const char* format, float power);
+    ImGui::SliderFloat("Velocidad", velocidad, 0.2, 2.5,NULL, ImGuiSliderFlags_AlwaysClamp);
 
-    //ImGui::RadioButton("Display b", &selectedDisplay, 2); ImGui::SameLine(); (const char* label, int* v, int v_button)
-
-    //ImGui::RadioButton("Display c", &selectedDisplay, 3);
-
-    //ImGui::Text("Ingrese el nombre de usuario de Twitter y la cantidad de tweets");    // Display some text (you can use a format strings too)
-
-    //ImGui::InputText("Usuario", buf_usuario, LONG_USUARIO + 1);
-    //ImGui::InputText("Cantidad de tweets", buf_canttweets, LONG_CANTTWEETS + 1);
+   
 
     if (ImGui::Button("Next"))
     {
@@ -380,7 +363,7 @@ int TwitterGui::loop(int * indice,float * velocidad) {
 
             al_clear_to_color(al_map_rgba_f(1, 1, 0.8, 1));
 
-            //Todo lo que dibuje aca va a quedar por detrás de las ventanas de DearImGui
+            //Todo lo que dibuje aca va a quedar por detrÃ¡s de las ventanas de DearImGui
 
             ImGui_ImplAllegro5_RenderDrawData(ImGui::GetDrawData());
 
