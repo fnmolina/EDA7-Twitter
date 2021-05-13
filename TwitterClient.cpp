@@ -22,12 +22,13 @@ TwitterClient::TwitterClient(bool* cancelRequest, int* clientError)
 	this->tweetsNum = "";					//Guarda string con la cantidad de tweets.
 	this->stillRunning = 0;					//Para manejo de estado de procesamiento
 	this->errorType = 0;					//Manejo de codigo de errores.
-	this->m = NULL;							//Puntero a estructura de CURLmsg.
+	//this->m = NULL;							//Puntero a estructura de CURLmsg.
 	//Datos de autentificacion de usuario de Twitter Developer. Por default, los datos provistos por la catedra.
 	API_key = "HCB39Q15wIoH61KIkY5faRDf6";
 	API_SecretKey = "7s8uvgQnJqjJDqA6JsLIFp90FcOaoR5Ic41LWyHOic0Ht3SRJ6";
 
 	tweetsReady = false;
+	this->readString = "";	//Para lectura de datos devueltos
 }
 
 //Posibilidad de cambio de usuario para acceder a los tuits.
@@ -166,7 +167,7 @@ void TwitterClient::configTweetsRequest(std::string count)
 	//Se inicializa nuevamente cURL, esta vez de forma simultanea y asincronica.
 	this->curl = curl_easy_init();
 	this->multiHandle = curl_multi_init();
-
+	this->readString = "";	//Para lectura de datos devueltos
 	this->tweetsReady = false;
 
 }
@@ -175,9 +176,7 @@ void TwitterClient::configTweetsRequest(std::string count)
 int TwitterClient::requestTweets()
 {
 	this->tweetsReady = false;
-	int msgq = 0;
-	this->j.clear();	
-	std::string readString = "";	//Para lectura de datos devueltos
+	//int msgq = 0;
 	//Por default, se setea el json de error como vacio.
 	json errorJson;
 	errorJson["myCount"] = nullptr;
@@ -205,7 +204,7 @@ int TwitterClient::requestTweets()
 
 		//Se realiza ahora un perform no bloqueante.
 		curl_multi_perform(multiHandle, &stillRunning);
-		m = curl_multi_info_read(multiHandle, &msgq);
+		//m = curl_multi_info_read(multiHandle, &msgq);
 		//Si se canceló la request en algun momento, se para el proceso.
 		if (*cancelRequest)
 		{
@@ -228,10 +227,14 @@ int TwitterClient::requestTweets()
 		//con toda la informacion de los tweets que le pedimos
 		if (stillRunning == 0)	//Si el proceso termino, se escribe el json
 		{
+			std::cout << "readString" << readString << std::endl;
 			this->j = json::parse(readString);
+			std::cout << "Hola" << std::endl;
 			this->tweetsReady = true;
 			//Cleanup al final.
+			curl_multi_cleanup(multiHandle);
 			curl_easy_cleanup(curl);
+			return 0;
 		}
 	}
 	//En caso de no haber podido realizar correctamente la conexion, error. 

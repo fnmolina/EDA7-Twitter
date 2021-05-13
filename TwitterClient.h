@@ -72,7 +72,8 @@ private:
 	int stillRunning;
 	bool tweetsReady;
 	int errorType;
-	struct CURLMsg* m;
+	std::string readString;	//Para lectura de datos devueltos
+	//struct CURLMsg* m;
 };
 
 #endif //__CLIENT_H__
