@@ -57,7 +57,7 @@ bool LCDB::lcdClear()
 	cp.column = 0;
 
 	writeLCD();
-	drawCursorLCD();
+	//drawCursorLCD();
 
 	return true;
 }
@@ -251,11 +251,11 @@ bool LCDB::lcdSetCursorPosition(const cursorPosition pos)
 	bool check = false;
 	//De ser valida la expresion, posiciona el cursor.
 	if (pos.row >= 0 && pos.row < ROWS && pos.column >= 0 && pos.column < COLUMNS) {
-		eraseCursorLCD();
+		//eraseCursorLCD();
 		cp.row = pos.row;
 		cp.column = pos.column;
 		check = true;
-		drawCursorLCD();
+		//drawCursorLCD();
 	}
 	return check;
 }

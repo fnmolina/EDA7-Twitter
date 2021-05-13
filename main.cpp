@@ -11,12 +11,24 @@
 #include "Gui.h"
 #include "Parser.h"
 
+/*    /$$$$$$                                                  /$$$$$$
+'     /$$__  $$                                               /$$__  $$
+'    | $$  \__/  /$$$$$$  /$$   /$$  /$$$$$$   /$$$$$$       |__/  \ $$
+'    | $$ /$$$$ /$$__  $$| $$  | $$ /$$__  $$ /$$__  $$         /$$$$$/
+'    | $$|_  $$| $$  \__/| $$  | $$| $$  \ $$| $$  \ $$        |___  $$
+'    | $$  \ $$| $$      | $$  | $$| $$  | $$| $$  | $$       /$$  \ $$
+'    |  $$$$$$/| $$      |  $$$$$$/| $$$$$$$/|  $$$$$$/      |  $$$$$$/
+'     \______/ |__/       \______/ | $$____/  \______/        \______/
+'                                  | $$
+'                                  | $$
+'                                  |__/
+*/
+
 #define TWEETS_FINISHED 0
 
 int update_tweets(Gui myGui,basicLCD* lcd, parsed_info* all_info, int * indice, float velocidad);
 void move_status_bar(Gui myGui,basicLCD* lcd,parsed_info* all_info);
-basicLCD* MainWindowSelector(Gui& myGui, TwitterClient* client,parsed_info* info);
-void printNames(std::list<std::string> names);
+basicLCD* MainWindowSelector(Gui& myGui, TwitterClient* client);
 
 int main(void) {
 
@@ -26,16 +38,6 @@ int main(void) {
 	float velocidad = 1.5; 
 	parsed_info all_info;
 
-	/*json tweets;
-	std::list<std::string> names;
-
-	client.requestBearerToken();
-	tweets = client.requestTweets(10);
-	for (auto element : tweets)
-		names.push_back(element["text"]);
-	std::cout << "Tweets retrieved from Twitter account: " << std::endl;
-	printNames(names);
-	*/
 	bool running = true;
 	bool showMainWindow = true;
 	bool displaySelector[LCDN] = { true, false, false };
@@ -62,7 +64,7 @@ int main(void) {
 	client.requestBearerToken();
 
 	basicLCD* lcd;
-	lcd = MainWindowSelector(myGui,&client,&all_info);
+	lcd = MainWindowSelector(myGui,&client);
 	tGui.showMainWindow();
 
 	if (lcd == NULL)
@@ -132,23 +134,31 @@ int main(void) {
 					break;
 				case ALLEGRO_EVENT_TIMER:
 
-					if(client.tweetsReady==true)
-					{
-						downloading = false;
-						client.tweetsReady = false;
-					}
-
-					if (downloading == true)
+					if (client.isReady())
 					{
 						if (update_tweets(myGui, lcd, &all_info, &indice, velocidad) == TWEETS_FINISHED)
+						{
 							closeDisplay = true;
+							tGui.close();
+						}
 					}
-					else if (downloading == false)
+					else
 					{
+						//Se muestra barra de descarga
 						move_status_bar(myGui, lcd, &all_info);
-						downloading = true;
-					}
-						
+						//Realiza request de los tweets
+						if (!client.requestTweets())
+						{
+							//En caso de haberse devuelto error, se carga en display
+							closeDisplay = true;
+							tGui.close();
+						}
+						if (client.isReady())
+						{
+							all_info.tweets = client.getTweets();
+							all_info.parse(myGui.usuario);
+						}
+					}	
 					break;
 				default:
 					break;
@@ -158,11 +168,19 @@ int main(void) {
 
 		if (closeDisplay)
 		{
+			string errorMessage = client.getErrorMessage();
+			if(errorMessage != "200 OK")
+			{
+				lcd->lcdClear();
+				lcd->operator<<(errorMessage.c_str());
+				al_flip_display();
+				al_rest(3);
+			}
 			all_info.names.clear();
 			all_info.dates.clear();
 			delete lcd;
 
-			basicLCD* temp = MainWindowSelector(myGui,&client,&all_info);
+			basicLCD* temp = MainWindowSelector(myGui,&client);
 			lcd = temp;
 			tGui.showMainWindow();
 			if (lcd == NULL)
@@ -179,17 +197,15 @@ int main(void) {
 }
 
 
-basicLCD* MainWindowSelector(Gui& myGui, TwitterClient* client, parsed_info* info)
+basicLCD* MainWindowSelector(Gui& myGui, TwitterClient* client)
 {
 	int selector = myGui.showMainWindow();
 
+	//Una vez introducidos el usuario y la cantidad de tuits, se lo pasa al client.
 	if (selector != -1)
 	{
-		//Una vez introducidos el usuario y la cantidad de tuits, se lo pasa al client.
 		client->setQuery(myGui.usuario);
-		info->tweets = client->requestTweets(myGui.cant_tweets);
-		if (client->tweetsReady == true)
-			info->parse(myGui.usuario);
+		client->configTweetsRequest(myGui.cant_tweets);
 	}
 	if (selector == 1)
 	{
@@ -210,12 +226,9 @@ basicLCD* MainWindowSelector(Gui& myGui, TwitterClient* client, parsed_info* inf
 	
 }
 
-void move_status_bar(Gui myGui,basicLCD* lcd,parsed_info* all_info){
+void move_status_bar(Gui myGui, basicLCD* lcd, parsed_info* all_info) {
 
-	static int bar_progress=0;
-
-	//Se muestra el nombre del usuario en la linea superior
-	lcd->operator<<(*(myGui.usuario.c_str()));
+	static int bar_progress = 0;
 
 	//Se setea segunda linea, en la columna correspondiente y se imprime la barra
 	cursorPosition lower_line;
@@ -223,24 +236,28 @@ void move_status_bar(Gui myGui,basicLCD* lcd,parsed_info* all_info){
 	lower_line.column = bar_progress;
 	lcd->lcdSetCursorPosition(lower_line);
 
-	lcd->operator<<("###");
+	lcd->operator<<("#");
 
 	//Se deja el cursor en un lugar estatico
 	lower_line.row = 0;
 	lower_line.column = 0;
 	lcd->lcdSetCursorPosition(lower_line);
 
+	//Se muestra el nombre del usuario en la linea superior
+	lcd->operator<<(myGui.usuario.c_str());
+
 	//Se incrementa el progreso de la barra
 	if (bar_progress < 15)
 		bar_progress++;
 	else
+	{
 		bar_progress = 0;
-
+		lower_line.row = 1;
+		lower_line.column = 0;
+		lcd->lcdSetCursorPosition(lower_line);
+		lcd->lcdClearToEOL();
+	}
 }
-
-/*cursorPosition lower_line;
-lower_line.row = 0;
-lower_line.column = 0;*/
 
 int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int* indice, float velocidad)
 {

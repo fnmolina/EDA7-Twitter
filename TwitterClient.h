@@ -32,23 +32,9 @@ public:
 
 	//Setea cantidad de tuits e inicializa request
 	void configTweetsRequest(std::string count);
-
-	//Concatena lo recibido en content
-	static size_t myCallback(void* contents, size_t size, size_t nmemb, void* userp)
-	{
-		size_t realsize = size * nmemb;
-		char* data = (char*)contents;
-		//fprintf(stdout, "%s",data);
-		std::string* s = (std::string*)userp;
-		s->append(data, realsize);
-		return realsize;						//recordar siempre devolver realsize
-	}
 	
-	//Devuelve indicador de finalizacion del proceso
-	bool isReady();
-
 	//Indica si los tweets estan listos
-	//int isReady();
+	bool isReady();
 
 	//Devuelve tweets en formato json
 	json getTweets();
@@ -57,6 +43,25 @@ public:
 	std::string getErrorMessage();
 
 private:
+
+	//Parser del header recibido desde twitter
+	bool headerParser();
+
+	//Concatena lo recibido en content
+	static size_t myCallback(void* contents, size_t size, size_t nmemb, void* userp)
+	{
+		size_t realsize = size * nmemb;
+		char* data = (char*)contents;
+		std::string* s = (std::string*)userp;
+		s->append(data, realsize);
+		return realsize;
+	}
+
+	static size_t header_callback(char* buffer, size_t size, size_t nitems, void* userdata) {
+		((std::string*)userdata)->append(buffer, size * nitems);
+		return size * nitems;
+	}
+
 	//Configuracion de las opciones de cURL
 	bool* cancelRequest;		//Recibe indicacion de cancelacion de descarga
 	int* clientError;			//Notifica en caso de error, sea durante la conexion, busqueda de usuario o descarga de tweets. 
@@ -71,9 +76,9 @@ private:
 	std::string API_SecretKey;
 	int stillRunning;
 	bool tweetsReady;
-	int errorType;
+	std::string errorMessage;
+	std::string header;
 	std::string readString;	//Para lectura de datos devueltos
-	//struct CURLMsg* m;
 };
 
 #endif //__CLIENT_H__

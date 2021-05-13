@@ -19,8 +19,6 @@ void parsed_info::parse(std::string user){
 		(*it).insert(0,"  - ");
 		(*it).insert(0,user);
 		(*it).insert(0,"@");
-		std::cout << "Tweet:" << *it << std::endl;
-		std::cout << "-----------------------------------------" << std::endl;
 	}
 	for (std::list<std::string>::iterator it = dates.begin(); it != dates.end(); it++)
 	{
@@ -45,18 +43,19 @@ void parsed_info::parse(std::string user){
 		}
 		stringDate += std::to_string(tm.tm_year - 100);
 		stringDate += " - ";
+		tm.tm_hour -= 3;
+		if (tm.tm_hour < 0)
+			tm.tm_hour += 24;
 		if (tm.tm_hour < 10)
 		{
 			stringDate += "0";
 		}
-		stringDate += std::to_string(tm.tm_hour - 3) + ":";
+		stringDate += std::to_string(tm.tm_hour) + ":";
 		if (tm.tm_min < 10)
 		{
 			stringDate += "0";
 		}
 		stringDate += std::to_string(tm.tm_min);
 		*it = stringDate;
-		std::cout << "Date:" << *it << std::endl;
-		std::cout << "-----------------------------------------" << std::endl;
 	}
 }

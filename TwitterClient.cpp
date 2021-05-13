@@ -21,14 +21,15 @@ TwitterClient::TwitterClient(bool* cancelRequest, int* clientError)
 	this->query = "";						// Direccion de Twitter que se va a consultar. 
 	this->tweetsNum = "";					//Guarda string con la cantidad de tweets.
 	this->stillRunning = 0;					//Para manejo de estado de procesamiento
-	this->errorType = 0;					//Manejo de codigo de errores.
-	//this->m = NULL;							//Puntero a estructura de CURLmsg.
+	this->errorMessage = "";				//
+	//this->m = NULL;						//Puntero a estructura de CURLmsg.
 	//Datos de autentificacion de usuario de Twitter Developer. Por default, los datos provistos por la catedra.
 	API_key = "HCB39Q15wIoH61KIkY5faRDf6";
 	API_SecretKey = "7s8uvgQnJqjJDqA6JsLIFp90FcOaoR5Ic41LWyHOic0Ht3SRJ6";
 
 	tweetsReady = false;
-	this->readString = "";	//Para lectura de datos devueltos
+	this->readString = "";					//Para lectura de datos devueltos
+	header = "";
 }
 
 //Posibilidad de cambio de usuario para acceder a los tuits.
@@ -53,19 +54,14 @@ bool TwitterClient::isReady()
 //Devuelve tweets en formato json
 json TwitterClient::getTweets()
 {
+	this->j = json::parse(readString);
 	return this->j;
 }
 
 //Devuelve descripcion de error segun el tipo. 
 std::string TwitterClient::getErrorMessage()
 {
-	std::string message = "";
-	switch (this->errorType)
-	{
-	case 0:
-		break;
-	}
-	return message;
+	return errorMessage;
 }
 
 //Configuracion de cURL, autentificacion con Outh2 y obtencion del token de Twitter.
@@ -132,13 +128,12 @@ int TwitterClient::requestBearerToken()
 		auxJson = json::parse(readString);
 
 		//Se encierra el parseo en un bloque try-catch porque la libreria maneja errores por excepciones.
-		//CHEQUEAR ESTO: pueden tambien parsear usando iteradores o la forma que quieras, buscar en la documentacion las diferentes formas.
 		try
 		{
 			//Tratamos de acceder al campo acces_token del JSON
 			std::string aux = auxJson["access_token"];
 			this->token = aux;
-			std::cout << "Bearer Token get from Twitter API: \n" << this->token << std::endl;
+			//std::cout << "Bearer Token get from Twitter API: \n" << this->token << std::endl;
 		}
 		catch (std::exception& e)
 		{
@@ -169,7 +164,8 @@ void TwitterClient::configTweetsRequest(std::string count)
 	this->multiHandle = curl_multi_init();
 	this->readString = "";	//Para lectura de datos devueltos
 	this->tweetsReady = false;
-
+	this->header = "";
+	this->errorMessage = "";
 }
 
 //Solicitud de tuits de un usuario de preferencia.
@@ -190,6 +186,8 @@ int TwitterClient::requestTweets()
 		curl_easy_setopt(curl, CURLOPT_URL, (this->query + this->tweetsNum).c_str());
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 		curl_easy_setopt(curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
+		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &this->header);
 
 		//Construimos el Header de autenticacion como lo especifica la API usando el token obtenido.
 		struct curl_slist* list = NULL;
@@ -204,37 +202,45 @@ int TwitterClient::requestTweets()
 
 		//Se realiza ahora un perform no bloqueante.
 		curl_multi_perform(multiHandle, &stillRunning);
-		//m = curl_multi_info_read(multiHandle, &msgq);
+
 		//Si se canceló la request en algun momento, se para el proceso.
 		if (*cancelRequest)
 		{
 			curl_multi_remove_handle(multiHandle, curl);
 		}
-		//Debemos hacer polling de la transferencia hasta que haya terminado.
-		//curl_multi_perform(multiHandle, &stillRunning);
-
-		//Check de errores.
+		
 		if (output != CURLE_OK)
 		{
 			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(output) << std::endl;
 			//Se liberan los recursos antes de salir.
 			curl_easy_cleanup(curl);
+			errorMessage = "cURL failed";
 			this->j = errorJson;
 			return 0;
 		}
+
 
 		//Si el request de CURL fue exitoso entonces twitter devuelve un JSON
 		//con toda la informacion de los tweets que le pedimos
 		if (stillRunning == 0)	//Si el proceso termino, se escribe el json
 		{
-			std::cout << "readString" << readString << std::endl;
-			this->j = json::parse(readString);
-			std::cout << "Hola" << std::endl;
-			this->tweetsReady = true;
-			//Cleanup al final.
-			curl_multi_cleanup(multiHandle);
-			curl_easy_cleanup(curl);
-			return 0;
+			//Analiza header. De haber error, avisa al usuario.
+			if (!headerParser())
+			{
+				this->j = errorJson;
+				this->tweetsReady = false;
+				curl_multi_cleanup(multiHandle);
+				curl_easy_cleanup(curl);
+				return 0;
+			}
+			else 
+			{
+				this->tweetsReady = true;
+				//Cleanup al final.
+				curl_multi_cleanup(multiHandle);
+				curl_easy_cleanup(curl);
+				return 1;
+			}
 		}
 	}
 	//En caso de no haber podido realizar correctamente la conexion, error. 
@@ -246,11 +252,90 @@ int TwitterClient::requestTweets()
 		//Cleanup al final.
 		curl_easy_cleanup(curl);
 		this->j = errorJson;
+		errorMessage = "Connection failed";
 		return 0;
 	}
-	return 0;
+	return 1;
 }
 
+
+bool TwitterClient::headerParser()
+{
+	bool check = false;
+	//Caso entrega correcta del tuit.
+	if (header.find("200 OK") != std::string::npos)
+	{
+		errorMessage = "200 OK";
+		check = true;
+		return check;
+	}
+	else if (header.find("304 Not Modified") != std::string::npos)
+	{
+		errorMessage = "304 Not Modified";
+		return check;
+	}
+	else if (header.find("400 Bad Request") != std::string::npos)
+	{
+		errorMessage = "400 Bad Request";
+		return check;
+	}
+	else if (header.find("401 Unauthorized") != std::string::npos)
+	{
+		errorMessage = "401 Unauthorized";
+		return check;
+	}
+	else if (header.find("403 Forbidden") != std::string::npos)
+	{
+		errorMessage = "403 Forbidden";
+		return check;
+	}
+	else if (header.find("404 Not Found") != std::string::npos)
+	{
+		errorMessage = "404 Not Found";
+		return check;
+	}
+	else if (header.find("406 Not Acceptable") != std::string::npos)
+	{
+		errorMessage = "406 Not Acceptable";
+		return check;
+	}
+	else if (header.find("410 Gone") != std::string::npos)
+	{
+		errorMessage = "410 Gone";
+		return check;
+	}
+	else if (header.find("422 Unprocessable Entity") != std::string::npos)
+	{
+		errorMessage = "422 Unprocessable";
+		return check;
+	}
+	else if (header.find("429 Too Many Requests") != std::string::npos)
+	{
+		errorMessage = "429 Too Many Req";
+		return check;
+	}
+	else if (header.find("500 Internal Server Error") != std::string::npos)
+	{
+		errorMessage = "500 Server Error";
+		return check;
+	}
+	else if (header.find("502 Bad Gateway") != std::string::npos)
+	{
+		errorMessage = "502 Bad Gateway";
+		return check;
+	}
+	else if (header.find("502 Service Unavailable") != std::string::npos)
+	{
+		errorMessage = "502 Unavailable";
+		return check;
+	}
+	else if (header.find("504 Gateway Timeout") != std::string::npos)
+	{
+		errorMessage = "504 Timeout";
+		return check;
+	}
+	return check;
+}
 
 
 
