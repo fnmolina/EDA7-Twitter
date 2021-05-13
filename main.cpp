@@ -23,7 +23,7 @@ int main(void) {
 	bool cancelRequest = false;
 	bool downloading = true;
 	int indice = 0;
-	float velocidad = 0.1; 
+	float velocidad = 1.5; 
 	parsed_info all_info;
 
 	/*json tweets;
@@ -132,23 +132,21 @@ int main(void) {
 					break;
 				case ALLEGRO_EVENT_TIMER:
 
-					if(client.isReady())
+					if(client.tweetsReady==true)
+					{
+						downloading = false;
+						client.tweetsReady = false;
+					}
+
+					if (downloading == true)
 					{
 						if (update_tweets(myGui, lcd, &all_info, &indice, velocidad) == TWEETS_FINISHED)
-						{
 							closeDisplay = true;
-						}
 					}
-					else
+					else if (downloading == false)
 					{
-						client.requestTweets();
-						if (client.isReady())
-						{
-							all_info.tweets = client.getTweets();
-							all_info.parse(myGui.usuario);
-						}
-						//mostrar tweets
-						//move_status_bar(myGui, lcd, &all_info);
+						move_status_bar(myGui, lcd, &all_info);
+						downloading = true;
 					}
 						
 					break;
@@ -174,7 +172,6 @@ int main(void) {
 			closeDisplay = false;
 		}
 
-
 	}
 
 
@@ -185,13 +182,15 @@ int main(void) {
 basicLCD* MainWindowSelector(Gui& myGui, TwitterClient* client, parsed_info* info)
 {
 	int selector = myGui.showMainWindow();
-	//Una vez introducidos el usuario y la cantidad de tuits, se lo pasa al client.
-	if(selector != -1) 
-	{
-		client->setQuery(myGui.usuario);
-		client->configTweetsRequest(myGui.cant_tweets);
-	}
 
+	if (selector != -1)
+	{
+		//Una vez introducidos el usuario y la cantidad de tuits, se lo pasa al client.
+		client->setQuery(myGui.usuario);
+		info->tweets = client->requestTweets(myGui.cant_tweets);
+		if (client->tweetsReady == true)
+			info->parse(myGui.usuario);
+	}
 	if (selector == 1)
 	{
 		return new LcdC();
@@ -248,7 +247,7 @@ int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int* indice, 
 	static int index = 0;
 	static float segundos = 0;
 	static int pos = 0;
-	segundos += velocidad; //0.1
+	segundos += 0.1;
 
 	if (*indice == 999)
 	{
@@ -302,7 +301,7 @@ int update_tweets(Gui myGui, basicLCD* lcd, parsed_info* all_info, int* indice, 
 	{
 		pos++;
 	}
-	else if (segundos >= (0.19 * velocidad) && pos != 0)
+	else if (segundos >= (0.19 / velocidad) && pos != 0)
 	{
 		segundos = 0;
 		if (pos + 16 < strlen((*inicio2).c_str()))

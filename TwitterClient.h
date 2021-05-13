@@ -28,10 +28,7 @@ public:
 	int requestBearerToken();
 
 	//Solicitud de tuits de un usuario de preferencia.
-	int requestTweets();
-
-	//Setea cantidad de tuits e inicializa request
-	void configTweetsRequest(std::string count);
+	json requestTweets(std::string count);
 
 	//Concatena lo recibido en content
 	static size_t myCallback(void* contents, size_t size, size_t nmemb, void* userp)
@@ -43,18 +40,8 @@ public:
 		s->append(data, realsize);
 		return realsize;						//recordar siempre devolver realsize
 	}
-	
-	//Devuelve indicador de finalizacion del proceso
-	bool isReady();
 
-	//Indica si los tweets estan listos
-	//int isReady();
-
-	//Devuelve tweets en formato json
-	json getTweets();
-
-	//Devuelve descripcion de error segun el tipo. 
-	std::string getErrorMessage();
+	bool tweetsReady;
 
 private:
 	//Configuracion de las opciones de cURL
@@ -66,13 +53,8 @@ private:
 	json j;						//json con informacion recibida de Twitter.
 	std::string token;			//Guarda token de acceso para recibir tweets.
 	std::string query;			// Direccion de Twitter que se va a consultar. 
-	std::string tweetsNum;		//Guarda string con la cantidad de tweets.
 	std::string API_key;		//Datos de autentificacion de usuario de Twitter Developer.
 	std::string API_SecretKey;
-	int stillRunning;
-	bool tweetsReady;
-	int errorType;
-	struct CURLMsg* m;
 };
 
 #endif //__CLIENT_H__
