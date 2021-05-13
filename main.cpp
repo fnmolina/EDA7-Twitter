@@ -94,21 +94,7 @@ int main(void) {
 				switch (ev.type)
 				{
 				case ALLEGRO_EVENT_KEY_CHAR:
-					/*if (ev.keyboard.unichar >= 32)
-					{
-						const char aChar = ev.keyboard.unichar;
-						lcd->operator<<(aChar);
-					}
-					else if (ev.keyboard.keycode == ALLEGRO_KEY_BACKSPACE)
-					{
-						lcd->lcdClear();
-					}
-					else if (ev.keyboard.keycode == ALLEGRO_KEY_TAB)
-					{
-						//char frase[] = "hola como te va";
-						lcd->lcdClearToEOL();
-						//lcd->operator<< (frase);
-					}*/
+					
 					if (ev.keyboard.keycode == ALLEGRO_KEY_RIGHT)
 					{
 						indice++;
@@ -116,11 +102,7 @@ int main(void) {
 					else if (ev.keyboard.keycode == ALLEGRO_KEY_LEFT)
 					{
 						indice--;
-					}/*
-					else if (ev.keyboard.keycode == ALLEGRO_KEY_UP)
-					{
-						lcd->lcdMoveCursorUp();
-					}*/
+					}
 					else if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN)
 					{
 						indice = 999;
